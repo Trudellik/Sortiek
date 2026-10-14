@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sortiek — IT Consulting</title>
+  <meta name="description" content="Sortiek IT Consulting. Website under construction.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%236366f1'/><stop offset='1' stop-color='%2306b6d4'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='url(%23g)'/><text x='16' y='22.5' font-family='Arial' font-weight='700' font-size='18' fill='white' text-anchor='middle'>S</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --text: #0b1220;
+      --muted: #5b6475;
+      --card: rgba(255, 255, 255, 0.65);
+      --card-border: rgba(15, 23, 42, 0.08);
+      --grid: rgba(15, 23, 42, 0.05);
+      --c1: #6366f1;
+      --c2: #06b6d4;
+      --c3: #a855f7;
+      --blob-opacity: 0.35;
+      --spot: rgba(99, 102, 241, 0.12);
+      --shine: rgba(255, 255, 255, 0.7);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #070b14;
+        --text: #eef2f8;
+        --muted: #9aa4b6;
+        --card: rgba(18, 24, 38, 0.55);
+        --card-border: rgba(255, 255, 255, 0.08);
+        --grid: rgba(255, 255, 255, 0.04);
+        --blob-opacity: 0.45;
+        --spot: rgba(99, 102, 241, 0.16);
+        --shine: rgba(255, 255, 255, 0.08);
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      position: relative;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 48px 16px;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      text-align: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Background: grid + floating colour blobs */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+      -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+      pointer-events: none;
+    }
+
+    /* Mouse-reactive layers (positions driven by --mx / --my from the script) */
+    .bg-grid-glow {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--c1) 1px, transparent 1px),
+        linear-gradient(90deg, var(--c1) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.35;
+      mask-image: radial-gradient(220px circle at var(--mx, -999px) var(--my, -999px), #000, transparent 70%);
+      -webkit-mask-image: radial-gradient(220px circle at var(--mx, -999px) var(--my, -999px), #000, transparent 70%);
+      pointer-events: none;
+    }
+    .spotlight {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(500px circle at var(--mx, -999px) var(--my, -999px), var(--spot), transparent 60%);
+      pointer-events: none;
+    }
+    .blobs {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      transform: translate(var(--px, 0px), var(--py, 0px));
+    }
+    .blob {
+      position: fixed;
+      width: 42vmax;
+      height: 42vmax;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: var(--blob-opacity);
+      pointer-events: none;
+      animation: float 18s ease-in-out infinite;
+    }
+    .blob.b1 { background: var(--c1); top: -15vmax; left: -10vmax; }
+    .blob.b2 { background: var(--c2); bottom: -18vmax; right: -12vmax; animation-delay: -6s; }
+    .blob.b3 { background: var(--c3); top: 40%; left: 55%; width: 26vmax; height: 26vmax; animation-delay: -12s; }
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(4vmax, 3vmax) scale(1.08); }
+      66% { transform: translate(-3vmax, 2vmax) scale(0.95); }
+    }
+
+    /* Card */
+    main {
+      position: relative;
+      width: 100%;
+      max-width: 520px;
+      padding: 56px 32px 48px;
+      border-radius: 24px;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      box-shadow: 0 30px 80px -20px rgba(15, 23, 42, 0.25);
+      transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+      animation: rise 0.9s cubic-bezier(.2, .8, .2, 1) backwards;
+    }
+    /* Light reflection on the card that follows the cursor */
+    main::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(400px circle at var(--cx, 50%) var(--cy, -50%), var(--shine), transparent 55%);
+      pointer-events: none;
+    }
+    main > * { position: relative; }
+    .logo-mark { transform: translate(var(--lx, 0px), var(--ly, 0px)); }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .logo-mark {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 20px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--c1), var(--c2));
+      color: #fff;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 2rem;
+      box-shadow: 0 12px 30px -8px var(--c1);
+    }
+
+    .brand {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: clamp(2.4rem, 8vw, 3.4rem);
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      background: linear-gradient(135deg, var(--text) 30%, var(--c1) 70%, var(--c2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .tagline {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      letter-spacing: 0.02em;
+    }
+
+    /* Status + progress bar */
+    .status {
+      margin-top: 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 500;
+      font-size: 0.85rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #f59e0b;
+      box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6);
+      animation: ping 2s ease-out infinite;
+    }
+    @keyframes ping {
+      0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); }
+      80%, 100% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+    }
+
+    .progress {
+      position: relative;
+      height: 4px;
+      max-width: 220px;
+      margin: 16px auto 0;
+      border-radius: 999px;
+      background: var(--card-border);
+      overflow: hidden;
+    }
+    .progress::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      width: 40%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--c1), var(--c2));
+      animation: slide 1.8s ease-in-out infinite;
+    }
+    @keyframes slide {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(250%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .blob, main, .dot, .progress::after { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="blobs" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-grid-glow" aria-hidden="true"></div>
+  <div class="spotlight" aria-hidden="true"></div>
+
+  <main>
+    <div class="logo-mark" aria-hidden="true">S</div>
+    <h1 class="brand">Sortiek</h1>
+    <p class="tagline">IT consulting services</p>
+
+    <div class="status"><span class="dot" aria-hidden="true"></span>Under construction</div>
+    <div class="progress" aria-hidden="true"></div>
+  </main>
+
+  <script>
+    (function () {
+      var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var root = document.documentElement;
+      var card = document.querySelector("main");
+
+      // Target and current pointer position; the current one eases toward the target each frame.
+      var target = { x: innerWidth / 2, y: innerHeight / 2 };
+      var current = { x: target.x, y: target.y };
+      var active = false;
+
+      window.addEventListener("pointermove", function (e) {
+        target.x = e.clientX;
+        target.y = e.clientY;
+        if (!active) {
+          active = true;
+          current.x = target.x;
+          current.y = target.y;
+        }
+      });
+      document.addEventListener("pointerleave", function () {
+        active = false;
+        root.style.removeProperty("--mx");
+        root.style.removeProperty("--my");
+        target.x = innerWidth / 2;
+        target.y = innerHeight / 2;
+      });
+
+      function frame() {
+        current.x += (target.x - current.x) * 0.12;
+        current.y += (target.y - current.y) * 0.12;
+
+        // -1 .. 1 relative to the viewport centre
+        var nx = (current.x / innerWidth) * 2 - 1;
+        var ny = (current.y / innerHeight) * 2 - 1;
+
+        if (active) {
+          root.style.setProperty("--mx", current.x + "px");
+          root.style.setProperty("--my", current.y + "px");
+        }
+
+        if (!reduceMotion) {
+          root.style.setProperty("--px", (-nx * 30) + "px");
+          root.style.setProperty("--py", (-ny * 30) + "px");
+          card.style.setProperty("--rx", (-ny * 6) + "deg");
+          card.style.setProperty("--ry", (nx * 8) + "deg");
+          card.style.setProperty("--lx", (nx * 6) + "px");
+          card.style.setProperty("--ly", (ny * 6) + "px");
+        }
+
+        if (active) {
+          var r = card.getBoundingClientRect();
+          card.style.setProperty("--cx", (current.x - r.left) + "px");
+          card.style.setProperty("--cy", (current.y - r.top) + "px");
+        }
+
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>
